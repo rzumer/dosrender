@@ -1,0 +1,10 @@
+# File backups
+*.BAK
+
+# Binaries
+*.OBJ
+*.EXE
+
+# Environment-specific
+*.LNK
+*.CONF
