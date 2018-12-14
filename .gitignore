@@ -1,10 +1,22 @@
-# File backups
-*.BAK
+# Open Watcom Project Files
+*.wpj
+*.tgt
 
-# Binaries
-*.OBJ
-*.EXE
+# Open Watcom Artifacts
+*.err
+
+# Borland Turbo C Artifacts
+*.bak
+
+# Build Artifacts
+*.lk1
+*.map
+*.mk
+*.mk1
+*.sym
+*.obj
+*.exe
 
 # Environment-specific
-*.LNK
-*.CONF
+*.lnk
+*.conf
