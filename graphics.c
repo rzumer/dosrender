@@ -40,36 +40,38 @@ void update_buffer(GraphicsContext *context)
 }
 
 /* Draws a rectangle on the screen with arbitrary border and fill colors (0 is transparent). */
-void draw_rectangle(GraphicsContext *context, Coordinates offset, Coordinates dimensions, uchar border_color, uchar fill_color)
+void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
 {
     Coordinates overflow; /* horizontal and vertical overflow used to avoid drawing outside of the screen */
     uchar *buffer; /* points to the screen buffer */
     uchar line_color; /* holds the color (border or fill) used when drawing a horizontal line */
     int y; /* scanline index for the draw loop */
 
-    overflow.x = MAX((offset.x + dimensions.x - context->screen_size.x), 0);
-    overflow.y = MAX((offset.y + dimensions.y - context->screen_size.y), 0);
+    overflow.x = MAX((rectangle.offset.x + rectangle.dimensions.x - context->screen_size.x), 0);
+    overflow.y = MAX((rectangle.offset.y + rectangle.dimensions.y - context->screen_size.y), 0);
 
     /* offset the pointer to the video memory */
-    buffer = (uchar *)(context->off_screen + offset.y * context->screen_size.x + offset.x);
+    buffer = (uchar *)(context->off_screen + rectangle.offset.y * context->screen_size.x + rectangle.offset.x);
 
-    for (y = 0; y < dimensions.y - overflow.y; y++)
+    for (y = 0; y < rectangle.dimensions.y - overflow.y; y++)
     {
         /* draw a full scanline of either the border or the fill color, depending on the current line */
-        line_color = y == 0 || y == (dimensions.y - overflow.y - 1) ? border_color : fill_color;
+        line_color =
+            y == 0 || y == (rectangle.dimensions.y - overflow.y - 1) ?
+            rectangle.border_color : rectangle.fill_color;
 
         if (line_color)
         {
             /* draw a full horizontal line */
-            _fmemset((void *)(buffer + y * context->screen_size.x), line_color, dimensions.x - overflow.x);
+            _fmemset((void *)(buffer + y * context->screen_size.x), line_color, rectangle.dimensions.x - overflow.x);
         }
 
         /* draw the border */
-        if (border_color)
+        if (rectangle.border_color)
         {
             /* draw vertical borders (two pixels per scanline) only */
-            *(buffer + y * context->screen_size.x) = border_color;
-            *(buffer + y * context->screen_size.x + dimensions.x - overflow.x) = border_color;
+            *(buffer + y * context->screen_size.x) = rectangle.border_color;
+            *(buffer + y * context->screen_size.x + rectangle.dimensions.x - overflow.x) = rectangle.border_color;
         }
     }
 }

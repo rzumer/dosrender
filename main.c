@@ -22,10 +22,8 @@ void set_bios_mode(int mode)
 
 int main(void) {
     GraphicsContext context = { { 0, 0 }, NULL, NULL };
-    Coordinates offset = { 60, 60 };
-    Coordinates dimensions = { 200, 100 };
-    uchar border_color = 0x20;
-    uchar fill_color = 0x36;
+    Rectangle rect1 = { { 60, 60 }, { 200, 100 }, 0x20, 0x36 };
+    Rectangle rect2 = { { 50, 50 }, { 150, 77 }, 0x0E, (uchar)NULL };
     int initial_bios_mode = get_bios_mode();
 
     /* enter BIOS mode 13 hex */
@@ -39,8 +37,9 @@ int main(void) {
         return 1;
     }
 
-    /* render a rectangle */
-    draw_rectangle(&context, offset, dimensions, border_color, fill_color);
+    /* render rectangles */
+    draw_rectangle(&context, rect1);
+    draw_rectangle(&context, rect2);
     update_buffer(&context);
     system("PAUSE");
 

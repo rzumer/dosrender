@@ -29,9 +29,17 @@ typedef struct GraphicsContext
     uchar far *off_screen;
 } GraphicsContext;
 
+typedef struct Rectangle
+{
+    Coordinates offset;
+    Coordinates dimensions;
+    uchar border_color;
+    uchar fill_color;
+} Rectangle;
+
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
 void update_buffer(GraphicsContext *context);
-void draw_rectangle(GraphicsContext *context, Coordinates offset, Coordinates dimensions, uchar border_color, uchar fill_color);
+void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
 
 #endif /* GRAPHICS_H */
