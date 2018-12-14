@@ -32,6 +32,6 @@ typedef struct GraphicsContext
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
 void update_buffer(GraphicsContext *context);
-void draw_rectangle(GraphicsContext *context, Coordinates offset, Coordinates dimensions, uchar color, int filled);
+void draw_rectangle(GraphicsContext *context, Coordinates offset, Coordinates dimensions, uchar border_color, uchar fill_color);
 
 #endif /* GRAPHICS_H */
