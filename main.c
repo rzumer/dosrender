@@ -23,7 +23,8 @@ void set_bios_mode(int mode)
 int main(void) {
     GraphicsContext context = { { 0, 0 }, NULL, NULL };
     Rectangle rect1 = { { 60, 60 }, { 200, 100 }, 0x20, 0x36 };
-    Rectangle rect2 = { { 50, 50 }, { 150, 77 }, 0x0E, (uchar)NULL };
+    Rectangle rect2 = { { -50, -50 }, { 150, 77 }, 0x0E, (uchar)NULL };
+    Line line = { { -30, -10 }, { 100, 120 }, 2 };
     int initial_bios_mode = get_bios_mode();
 
     /* enter BIOS mode 13 hex */
@@ -40,6 +41,7 @@ int main(void) {
     /* render rectangles */
     draw_rectangle(&context, rect1);
     draw_rectangle(&context, rect2);
+    draw_line(&context, line);
     update_buffer(&context);
     system("PAUSE");
 

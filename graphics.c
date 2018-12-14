@@ -52,7 +52,7 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
     overflow.x = MAX((rectangle.offset.x + rectangle.dimensions.x - context->screen_size.x), 0);
     overflow.y = MAX((rectangle.offset.y + rectangle.dimensions.y - context->screen_size.y), 0);
 
-    if (rectangle.offset.x > context->screen_size.x || rectangle.offset.y > context->screen_size.y)
+    if (rectangle.offset.x >= context->screen_size.x || rectangle.offset.y >= context->screen_size.y)
     {
         return;
     }
@@ -90,6 +90,58 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
             {
                 *(buffer + y * context->screen_size.x + rectangle.dimensions.x - overflow.x - underflow.x) = rectangle.border_color;
             }
+        }
+    }
+}
+
+/* Draws a straight line between two points, based on Bresenham's algorithm. */
+void draw_line(GraphicsContext *context, Line line)
+{
+    uchar *buffer; /* points to the screen buffer */
+    Coordinates delta; /* delta between the points */
+    float delta_error; /* error delta per step */
+    float error = 0.0f; /* current error */
+    int x; /* horizontal index */
+    int y = line.a.y; /* scanline index */
+
+    delta.x = line.b.x - line.a.x;
+    delta.y = line.b.y - line.a.y;
+    delta_error = fabs((float)delta.y / (float)delta.x);
+
+    /* invert the line coordinates if needed */
+    if (line.b.x < line.a.x)
+    {
+        Line inverted_line;
+        inverted_line.a = line.b;
+        inverted_line.b = line.a;
+        inverted_line.color = line.color;
+
+        draw_line(context, inverted_line);
+        return;
+    }
+
+    if ((line.a.x >= context->screen_size.x && line.b.x >= context->screen_size.x) ||
+        (line.a.y >= context->screen_size.y && line.b.y >= context->screen_size.y))
+    {
+        return;
+    }
+
+    /* point the buffer to the video memory */
+    buffer = (uchar *)(context->off_screen);
+
+    for (x = line.a.x; x < line.b.x; x++)
+    {
+        if (x >= 0 && y >= 0 && x < context->screen_size.x && y < context->screen_size.y)
+        {
+            *(buffer + y * context->screen_size.x + x) = line.color;
+        }
+
+        error += delta_error;
+
+        if (error >= 0.5f)
+        {
+            y += SIGN(delta.y);
+            error -= 1.0f;
         }
     }
 }

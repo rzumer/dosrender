@@ -9,7 +9,9 @@
 
 #include <conio.h>
 #include <dos.h>
+#include <math.h>
 #include <mem.h>
+#include <stdlib.h>
 #include "common.h"
 
 /* Input status port, to check rendering status. */
@@ -37,9 +39,17 @@ typedef struct Rectangle
     uchar fill_color;
 } Rectangle;
 
+typedef struct Line
+{
+    Coordinates a;
+    Coordinates b;
+    uchar color;
+} Line;
+
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
 void update_buffer(GraphicsContext *context);
 void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
+void draw_line(GraphicsContext *context, Line line);
 
 #endif /* GRAPHICS_H */

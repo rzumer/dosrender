@@ -12,6 +12,7 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define SIGN(x) ((x) > 0) - ((x) < 0)
 
 #define TRUE 1
 #define FALSE 0
