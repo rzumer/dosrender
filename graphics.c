@@ -208,7 +208,7 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
 }
 
 /* Scales a vertex around an origin point. */
-Coordinates scale_vertex(GraphicsContext *context, Coordinates vertex, Coordinates origin, float scale_x, float scale_y)
+Coordinates scale_vertex(Coordinates vertex, Coordinates origin, float scale_x, float scale_y)
 {
     Coordinates relative_vertex, scaled_vertex;
 
@@ -222,18 +222,18 @@ Coordinates scale_vertex(GraphicsContext *context, Coordinates vertex, Coordinat
 }
 
 /* Scales a line around its origin. Negative scale factors allow mirroring. */
-Line scale_line(GraphicsContext *context, Line line, float scale_x, float scale_y)
+Line scale_line(Line line, float scale_x, float scale_y)
 {
     Line scaled_line;
 
     scaled_line.a = line.a;
-    scaled_line.b = scale_vertex(context, line.b, line.a, scale_x, scale_y);
+    scaled_line.b = scale_vertex(line.b, line.a, scale_x, scale_y);
     scaled_line.color = line.color;
 
     return scaled_line;
 }
 
-Rectangle scale_rectangle(GraphicsContext *context, Rectangle rectangle, float scale_x, float scale_y)
+Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y)
 {
     Rectangle scaled_rectangle;
     int offset; /* holds the offset when swapping values due to mirroring */
@@ -263,7 +263,7 @@ Rectangle scale_rectangle(GraphicsContext *context, Rectangle rectangle, float s
 }
 
 /* Scales a polygon around its origin. Negative scale factors allow mirroring. */
-Polygon scale_polygon(GraphicsContext *context, Polygon polygon, float scale_x, float scale_y)
+Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y)
 {
     Coordinates origin = polygon.vertices[0];
     Polygon scaled_polygon;
@@ -278,7 +278,7 @@ Polygon scale_polygon(GraphicsContext *context, Polygon polygon, float scale_x, 
 
     for (v = 1; v < polygon.vertices_length; v++)
     {
-        scaled_vertices[v] = scale_vertex(context, polygon.vertices[v], origin, scale_x, scale_y);
+        scaled_vertices[v] = scale_vertex(polygon.vertices[v], origin, scale_x, scale_y);
     }
 
     return scaled_polygon;
