@@ -201,10 +201,36 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
     }
 }
 
+/* Scales a vertex around an origin point. */
+Coordinates scale_vertex(GraphicsContext *context, Coordinates vertex, Coordinates origin, float scale_x, float scale_y)
+{
+    Coordinates relative_vertex, scaled_vertex;
+
+    relative_vertex.x = vertex.x - origin.x;
+    relative_vertex.y = vertex.y - origin.y;
+
+    scaled_vertex.x = (int)(relative_vertex.x * scale_x + 0.5) + origin.x;
+    scaled_vertex.y = (int)(relative_vertex.y * scale_y + 0.5) + origin.y;
+
+    return scaled_vertex;
+}
+
+/* Scales a line around its origin. Negative scale factors allow mirroring. */
+Line scale_line(GraphicsContext *context, Line line, float scale_x, float scale_y)
+{
+    Line scaled_line;
+
+    scaled_line.a = line.a;
+    scaled_line.b = scale_vertex(context, line.b, line.a, scale_x, scale_y);
+    scaled_line.color = line.color;
+
+    return scaled_line;
+}
+
+/* Scales a polygon around its origin. Negative scale factors allow mirroring. */
 Polygon scale_polygon(GraphicsContext *context, Polygon polygon, float scale_x, float scale_y)
 {
     Coordinates origin = polygon.vertices[0];
-    Coordinates relative_vertex; /* used to scale around the origin of the polygon */
     Polygon scaled_polygon;
     Coordinates *scaled_vertices = malloc(polygon.vertices_length * sizeof(Coordinates));
     int v; /* vertex index */
@@ -213,13 +239,11 @@ Polygon scale_polygon(GraphicsContext *context, Polygon polygon, float scale_x, 
     scaled_polygon.vertices_length = polygon.vertices_length;
     scaled_polygon.color = polygon.color;
 
-    for (v = 0; v < polygon.vertices_length; v++)
-    {
-        relative_vertex.x = polygon.vertices[v].x - origin.x;
-        relative_vertex.y = polygon.vertices[v].y - origin.y;
+    scaled_vertices[0] = origin;
 
-        scaled_vertices[v].x = (int)(relative_vertex.x * scale_x + 0.5) + origin.x;
-        scaled_vertices[v].y = (int)(relative_vertex.y * scale_y + 0.5) + origin.y;
+    for (v = 1; v < polygon.vertices_length; v++)
+    {
+        scaled_vertices[v] = scale_vertex(context, polygon.vertices[v], origin, scale_x, scale_y);
     }
 
     return scaled_polygon;
