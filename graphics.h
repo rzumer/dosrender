@@ -31,13 +31,11 @@ typedef struct GraphicsContext
     uchar far *off_screen;
 } GraphicsContext;
 
-typedef struct Rectangle
+typedef struct Point
 {
-    Coordinates offset;
-    Coordinates dimensions;
-    uchar border_color;
-    uchar fill_color;
-} Rectangle;
+    Coordinates coordinates;
+    uchar color;
+} Point;
 
 typedef struct Line
 {
@@ -46,12 +44,27 @@ typedef struct Line
     uchar color;
 } Line;
 
+typedef struct Rectangle
+{
+    Coordinates offset;
+    Coordinates dimensions;
+    uchar border_color;
+    uchar fill_color;
+} Rectangle;
+
+typedef struct Polygon
+{
+    Coordinates *vertices;
+    int vertices_length;
+    uchar color;
+} Polygon;
+
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
 void update_buffer(GraphicsContext *context);
-void draw_pixel(GraphicsContext *context, Coordinates point, uchar color);
-void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
+void draw_point(GraphicsContext *context, Point point);
 void draw_line(GraphicsContext *context, Line line);
-void draw_polygon(GraphicsContext *context, Coordinates *vertices, int vertices_length, uchar color);
+void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
+void draw_polygon(GraphicsContext *context, Polygon polygon);
 
 #endif /* GRAPHICS_H */

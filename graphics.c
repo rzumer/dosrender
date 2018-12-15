@@ -39,73 +39,19 @@ void update_buffer(GraphicsContext *context)
     _fmemcpy((void *)(context->screen), (void *)(context->off_screen), context->screen_size.x * context->screen_size.y);
 }
 
-void draw_pixel(GraphicsContext *context, Coordinates point, uchar color)
+/* Draws a single point on the screen. */
+void draw_point(GraphicsContext *context, Point point)
 {
     uchar *buffer; /* points to the screen buffer */
+    Coordinates p = point.coordinates;
 
-    if (point.x < 0 || point.y < 0 || point.x >= context->screen_size.x || point.y >= context->screen_size.y)
+    if (p.x < 0 || p.y < 0 || p.x >= context->screen_size.x || p.y >= context->screen_size.y)
     {
         return;
     }
 
-    buffer = (uchar *)(context->off_screen + point.y * context->screen_size.x + point.y);
-
-    *(buffer) = color;
-}
-
-/* Draws a rectangle on the screen with arbitrary border and fill colors (0 is transparent). */
-void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
-{
-    Coordinates overflow, underflow; /* used to avoid drawing outside of the screen */
-    uchar *buffer; /* points to the screen buffer */
-    uchar line_color; /* holds the color (border or fill) used when drawing a horizontal line */
-    int y; /* scanline index for the draw loop */
-
-    underflow.x = MAX(rectangle.offset.x * -1, 0);
-    underflow.y = MAX(rectangle.offset.y * -1, 0);
-    overflow.x = MAX((rectangle.offset.x + rectangle.dimensions.x - context->screen_size.x), 0);
-    overflow.y = MAX((rectangle.offset.y + rectangle.dimensions.y - context->screen_size.y), 0);
-
-    if (rectangle.offset.x >= context->screen_size.x || rectangle.offset.y >= context->screen_size.y)
-    {
-        return;
-    }
-
-    /* offset the pointer to the video memory */
-    buffer = (uchar *)(context->off_screen + rectangle.offset.y * context->screen_size.x + rectangle.offset.x + underflow.x);
-
-    for (y = -1 * MIN(rectangle.offset.y, 0); y < rectangle.dimensions.y - overflow.y; y++)
-    {
-        /* draw a full scanline of either the border or the fill color, depending on the current line */
-        line_color =
-            y == 0 || y == (rectangle.dimensions.y) ?
-            rectangle.border_color : rectangle.fill_color;
-
-        if (line_color)
-        {
-            /* draw a full horizontal line */
-            _fmemset(
-                (void *)(buffer + y * context->screen_size.x),
-                line_color,
-                rectangle.dimensions.x - overflow.x - underflow.x);
-        }
-
-        /* draw the border */
-        if (rectangle.border_color)
-        {
-            /* draw vertical borders (two pixels per scanline) only */
-            if (rectangle.offset.x >= 0 && rectangle.offset.x < context->screen_size.x)
-            {
-                *(buffer + y * context->screen_size.x) = rectangle.border_color;
-            }
-
-            if (rectangle.offset.x + rectangle.dimensions.x >= 0 &&
-                rectangle.offset.x + rectangle.dimensions.x < context->screen_size.x)
-            {
-                *(buffer + y * context->screen_size.x + rectangle.dimensions.x - overflow.x - underflow.x) = rectangle.border_color;
-            }
-        }
-    }
+    buffer = (uchar *)(context->off_screen + p.y * context->screen_size.x + p.y);
+    *(buffer) = point.color;
 }
 
 /* Draws a straight line between two points, based on Bresenham's algorithm. */
@@ -176,25 +122,80 @@ void draw_line(GraphicsContext *context, Line line)
     } while (!converged);
 }
 
+/* Draws a rectangle on the screen with arbitrary border and fill colors (0 is transparent). */
+void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
+{
+    Coordinates overflow, underflow; /* used to avoid drawing outside of the screen */
+    uchar *buffer; /* points to the screen buffer */
+    uchar line_color; /* holds the color (border or fill) used when drawing a horizontal line */
+    int y; /* scanline index for the draw loop */
+
+    underflow.x = MAX(rectangle.offset.x * -1, 0);
+    underflow.y = MAX(rectangle.offset.y * -1, 0);
+    overflow.x = MAX((rectangle.offset.x + rectangle.dimensions.x - context->screen_size.x), 0);
+    overflow.y = MAX((rectangle.offset.y + rectangle.dimensions.y - context->screen_size.y), 0);
+
+    if (rectangle.offset.x >= context->screen_size.x || rectangle.offset.y >= context->screen_size.y)
+    {
+        return;
+    }
+
+    /* offset the pointer to the video memory */
+    buffer = (uchar *)(context->off_screen + rectangle.offset.y * context->screen_size.x + rectangle.offset.x + underflow.x);
+
+    for (y = -1 * MIN(rectangle.offset.y, 0); y < rectangle.dimensions.y - overflow.y; y++)
+    {
+        /* draw a full scanline of either the border or the fill color, depending on the current line */
+        line_color =
+            y == 0 || y == (rectangle.dimensions.y) ?
+            rectangle.border_color : rectangle.fill_color;
+
+        if (line_color)
+        {
+            /* draw a full horizontal line */
+            _fmemset(
+                (void *)(buffer + y * context->screen_size.x),
+                line_color,
+                rectangle.dimensions.x - overflow.x - underflow.x);
+        }
+
+        /* draw the border */
+        if (rectangle.border_color)
+        {
+            /* draw vertical borders (two pixels per scanline) only */
+            if (rectangle.offset.x >= 0 && rectangle.offset.x < context->screen_size.x)
+            {
+                *(buffer + y * context->screen_size.x) = rectangle.border_color;
+            }
+
+            if (rectangle.offset.x + rectangle.dimensions.x >= 0 &&
+                rectangle.offset.x + rectangle.dimensions.x < context->screen_size.x)
+            {
+                *(buffer + y * context->screen_size.x + rectangle.dimensions.x - overflow.x - underflow.x) = rectangle.border_color;
+            }
+        }
+    }
+}
+
 /* Draws an arbitrary polygon, with a given border color. */
-void draw_polygon(GraphicsContext *context, Coordinates *vertices, int vertices_length, uchar color)
+void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
     Coordinates a, b; /* holds coordinates used to draw each line of the polygon */
     Line line; /* holds parameters used to draw each line of the polygon */
     int i; /* index iterating over vertices */
 
-    if (vertices_length <= 0)
+    if (polygon.vertices_length <= 0)
     {
         return;
     }
 
-    for (i = 0; i < vertices_length; i++)
+    for (i = 0; i < polygon.vertices_length; i++)
     {
-        a = vertices[i];
-        b = i == vertices_length - 1 ? vertices[0] : vertices[i + 1];
+        a = polygon.vertices[i];
+        b = i == polygon.vertices_length - 1 ? polygon.vertices[0] : polygon.vertices[i + 1];
         line.a = a;
         line.b = b;
-        line.color = color;
+        line.color = polygon.color;
 
         draw_line(context, line);
     }
