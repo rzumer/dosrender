@@ -73,6 +73,13 @@ Coordinates scale_vertex(Coordinates vertex, Coordinates origin, float scale_x, 
 Line scale_line(Line line, float scale_x, float scale_y);
 Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y);
 Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y);
+
+Coordinates rotate_vertex(Coordinates vertex, Coordinates origin, float angle);
+Line rotate_line(Line line, float angle);
 Polygon rotate_polygon(Polygon polygon, float angle);
+
+Coordinates shear_vertex(Coordinates vertex, Coordinates origin, float shear_x, float shear_y);
+Line shear_line(Line line, float shear_x, float shear_y);
+Polygon shear_polygon(Polygon polygon, float shear_x, float shear_y);
 
 #endif /* GRAPHICS_H */

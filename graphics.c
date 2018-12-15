@@ -325,3 +325,43 @@ Polygon rotate_polygon(Polygon polygon, float angle)
 
     return rotated_polygon;
 }
+
+/* Shears a vertex around an origin point. */
+Coordinates shear_vertex(Coordinates vertex, Coordinates origin, float shear_x, float shear_y)
+{
+    Coordinates relative_vertex, shorn_vertex;
+
+    relative_vertex.x = vertex.x - origin.x;
+    relative_vertex.y = vertex.y - origin.y;
+
+    shorn_vertex.x = (int)(relative_vertex.x + shear_x * relative_vertex.y + 0.5) + origin.x;
+    shorn_vertex.y = (int)(relative_vertex.y + shear_y * relative_vertex.x + 0.5) + origin.y;
+
+    return shorn_vertex;
+}
+
+/* Shears a line around its origin. */
+Line shear_line(Line line, float shear_x, float shear_y)
+{
+    Line shorn_line = line;
+    shorn_line.b = shear_vertex(line.b, line.a, shear_x, shear_y);
+
+    return shorn_line;
+}
+
+/* Shears a polygon around its origin. */
+Polygon shear_polygon(Polygon polygon, float shear_x, float shear_y)
+{
+    Coordinates origin = polygon.vertices[0];
+    Polygon shorn_polygon = clone_polygon(polygon);
+    int v; /* vertex index */
+
+    shorn_polygon.vertices[0] = origin;
+
+    for (v = 1; v < polygon.vertices_length; v++)
+    {
+        shorn_polygon.vertices[v] = shear_vertex(polygon.vertices[v], origin, shear_x, shear_y);
+    }
+
+    return shorn_polygon;
+}
