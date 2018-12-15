@@ -101,15 +101,24 @@ void draw_line(GraphicsContext *context, Line line)
     Coordinates delta; /* delta between the points */
     float delta_error; /* error delta per step */
     float error = 0.0f; /* current error */
-    int x; /* horizontal index */
-    int y = line.a.y; /* scanline index */
+    int x = line.a.x; /* horizontal index */
+    int y = line.a.y; /* vertical index */
+    int vertical; /* iterate over y instead of x, for lines with large slopes */
 
     delta.x = line.b.x - line.a.x;
     delta.y = line.b.y - line.a.y;
-    delta_error = fabs((float)delta.y / (float)delta.x);
+
+    if ((line.a.x >= context->screen_size.x && line.b.x >= context->screen_size.x) ||
+        (line.a.y >= context->screen_size.y && line.b.y >= context->screen_size.y))
+    {
+        return;
+    }
+
+    vertical = abs(delta.y) > abs(delta.x);
+    delta_error = vertical ? fabs(delta.x / (float)delta.y) : fabs(delta.y / (float)delta.x);
 
     /* invert the line coordinates if needed */
-    if (line.b.x < line.a.x)
+    if (vertical ? line.b.y < line.a.y : line.b.x < line.a.x)
     {
         Line inverted_line;
         inverted_line.a = line.b;
@@ -120,16 +129,10 @@ void draw_line(GraphicsContext *context, Line line)
         return;
     }
 
-    if ((line.a.x >= context->screen_size.x && line.b.x >= context->screen_size.x) ||
-        (line.a.y >= context->screen_size.y && line.b.y >= context->screen_size.y))
-    {
-        return;
-    }
-
     /* point the buffer to the video memory */
     buffer = (uchar *)(context->off_screen);
 
-    for (x = line.a.x; x < line.b.x; x++)
+    do
     {
         if (x >= 0 && y >= 0 && x < context->screen_size.x && y < context->screen_size.y)
         {
@@ -140,8 +143,18 @@ void draw_line(GraphicsContext *context, Line line)
 
         if (error >= 0.5f)
         {
-            y += SIGN(delta.y);
+            if (vertical)
+            {
+                x += SIGN(delta.x);
+            }
+            else
+            {
+                y += SIGN(delta.y);
+            }
+
             error -= 1.0f;
         }
-    }
+
+        vertical ? y++ : x++;
+    } while (x < line.b.x || y < line.b.y);
 }
