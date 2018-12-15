@@ -39,6 +39,16 @@ void update_buffer(GraphicsContext *context)
     _fmemcpy((void *)(context->screen), (void *)(context->off_screen), context->screen_size.x * context->screen_size.y);
 }
 
+Polygon clone_polygon(Polygon polygon)
+{
+    Polygon cloned_polygon = polygon;
+    size_t vertices_size = polygon.vertices_length * sizeof(Coordinates);
+    cloned_polygon.vertices = malloc(vertices_size);
+    memcpy(cloned_polygon.vertices, polygon.vertices, vertices_size);
+
+    return cloned_polygon;
+}
+
 /* Draws a single point on the screen. */
 void draw_point(GraphicsContext *context, Point point)
 {
@@ -264,19 +274,14 @@ Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y)
 Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y)
 {
     Coordinates origin = polygon.vertices[0];
-    Polygon scaled_polygon;
-    Coordinates *scaled_vertices = malloc(polygon.vertices_length * sizeof(Coordinates));
+    Polygon scaled_polygon = clone_polygon(polygon);
     int v; /* vertex index */
 
-    scaled_polygon.vertices = scaled_vertices;
-    scaled_polygon.vertices_length = polygon.vertices_length;
-    scaled_polygon.color = polygon.color;
-
-    scaled_vertices[0] = origin;
+    scaled_polygon.vertices[0] = origin;
 
     for (v = 1; v < polygon.vertices_length; v++)
     {
-        scaled_vertices[v] = scale_vertex(polygon.vertices[v], origin, scale_x, scale_y);
+        scaled_polygon.vertices[v] = scale_vertex(polygon.vertices[v], origin, scale_x, scale_y);
     }
 
     return scaled_polygon;

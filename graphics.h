@@ -59,6 +59,8 @@ typedef struct Polygon
     uchar color;
 } Polygon;
 
+Polygon clone_polygon(Polygon polygon);
+
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
 void update_buffer(GraphicsContext *context);
