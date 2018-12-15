@@ -50,6 +50,7 @@ int main(void) {
     rect1_polygon = scale_polygon(rect1_polygon, 1.24f, 1.0f);
     line = scale_line(line, 2.0f, 1.0f);
     rect1 = scale_rectangle(rect1, -1.0f, -1.0f);
+    triangle = rotate_polygon(triangle, 30.0f);
 
     /* render graphics */
     draw_rectangle(&context, rect1);

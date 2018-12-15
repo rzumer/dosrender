@@ -232,15 +232,13 @@ Coordinates scale_vertex(Coordinates vertex, Coordinates origin, float scale_x, 
 /* Scales a line around its origin. Negative scale factors allow mirroring. */
 Line scale_line(Line line, float scale_x, float scale_y)
 {
-    Line scaled_line;
-
-    scaled_line.a = line.a;
+    Line scaled_line = line;
     scaled_line.b = scale_vertex(line.b, line.a, scale_x, scale_y);
-    scaled_line.color = line.color;
 
     return scaled_line;
 }
 
+/* Scales a rectangle around its origin. Negative scale factors allow mirroring. */
 Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y)
 {
     Rectangle scaled_rectangle;
@@ -285,4 +283,45 @@ Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y)
     }
 
     return scaled_polygon;
+}
+
+/* Rotates a vertex in the 2D plane around an origin point. */
+Coordinates rotate_vertex(Coordinates vertex, Coordinates origin, float angle)
+{
+    Coordinates relative_vertex, rotated_vertex;
+    float radians = angle * M_PI / 180.0f;
+
+    relative_vertex.x = vertex.x - origin.x;
+    relative_vertex.y = vertex.y - origin.y;
+
+    rotated_vertex.x = (int)(relative_vertex.x * cos(radians) - relative_vertex.y * sin(radians) + 0.5) + origin.x;
+    rotated_vertex.y = (int)(relative_vertex.y * cos(radians) + relative_vertex.x * sin(radians) + 0.5) + origin.y;
+
+    return rotated_vertex;
+}
+
+/* Rotates a line around its origin. */
+Line rotate_line(Line line, float angle)
+{
+    Line rotated_line = line;
+    rotated_line.b = rotate_vertex(line.b, line.a, angle);
+
+    return rotated_line;
+}
+
+/* Rotates a polygon around its origin. */
+Polygon rotate_polygon(Polygon polygon, float angle)
+{
+    Coordinates origin = polygon.vertices[0];
+    Polygon rotated_polygon = clone_polygon(polygon);
+    int v; /* vertex index */
+
+    rotated_polygon.vertices[0] = origin;
+
+    for (v = 1; v < polygon.vertices_length; v++)
+    {
+        rotated_polygon.vertices[v] = rotate_vertex(polygon.vertices[v], origin, angle);
+    }
+
+    return rotated_polygon;
 }

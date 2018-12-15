@@ -68,9 +68,11 @@ void draw_point(GraphicsContext *context, Point point);
 void draw_line(GraphicsContext *context, Line line);
 void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
 void draw_polygon(GraphicsContext *context, Polygon polygon);
+
 Coordinates scale_vertex(Coordinates vertex, Coordinates origin, float scale_x, float scale_y);
 Line scale_line(Line line, float scale_x, float scale_y);
 Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y);
 Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y);
+Polygon rotate_polygon(Polygon polygon, float angle);
 
 #endif /* GRAPHICS_H */

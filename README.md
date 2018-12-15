@@ -8,6 +8,7 @@ Graphics rendering engine/demo for 16-bit DOS with mode 13 hex.
   - [x] Out-of-bounds support
   - [ ] Transformation support
     - [x] Scaling/Mirroring
+    - [x] 2D Rotation
     - [ ] 3D Perspective
 - [x] Rectangles
   - [x] Arbitrary size
@@ -16,6 +17,7 @@ Graphics rendering engine/demo for 16-bit DOS with mode 13 hex.
   - [x] Out-of-bounds support
   - [ ] Transformation support
     - [x] Scaling/Mirroring
+    - [ ] 2D Rotation
     - [ ] 3D Perspective
 - [x] Free-form polygons
   - [x] Arbitrary sides
@@ -24,6 +26,7 @@ Graphics rendering engine/demo for 16-bit DOS with mode 13 hex.
   - [ ] Arbitrary fill color
   - [ ] Transformation support
     - [x] Scaling/Mirroring
+    - [x] 2D Rotation
     - [ ] 3D Perspective
 - [ ] Sprites
 - [ ] Text
