@@ -19,6 +19,8 @@ Graphics rendering engine/demo for 16-bit DOS with mode 13 hex.
   - [x] Out-of-bounds support
   - [ ] Arbitrary fill color
   - [ ] Transformation support
+    - [x] Scaling/Mirroring
+    - [ ] 3D Perspective
 - [ ] Sprites
 - [ ] Text
 

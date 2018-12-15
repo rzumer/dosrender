@@ -200,3 +200,27 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
         draw_line(context, line);
     }
 }
+
+Polygon scale_polygon(GraphicsContext *context, Polygon polygon, float scale_x, float scale_y)
+{
+    Coordinates origin = polygon.vertices[0];
+    Coordinates relative_vertex; /* used to scale around the origin of the polygon */
+    Polygon scaled_polygon;
+    Coordinates *scaled_vertices = malloc(polygon.vertices_length * sizeof(Coordinates));
+    int v; /* vertex index */
+
+    scaled_polygon.vertices = scaled_vertices;
+    scaled_polygon.vertices_length = polygon.vertices_length;
+    scaled_polygon.color = polygon.color;
+
+    for (v = 0; v < polygon.vertices_length; v++)
+    {
+        relative_vertex.x = polygon.vertices[v].x - origin.x;
+        relative_vertex.y = polygon.vertices[v].y - origin.y;
+
+        scaled_vertices[v].x = (int)(relative_vertex.x * scale_x + 0.5) + origin.x;
+        scaled_vertices[v].y = (int)(relative_vertex.y * scale_y + 0.5) + origin.y;
+    }
+
+    return scaled_polygon;
+}
