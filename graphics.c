@@ -186,21 +186,19 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
 /* Draws an arbitrary polygon, with a given border color. */
 void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
-    Coordinates a, b; /* holds coordinates used to draw each line of the polygon */
     Line line; /* holds parameters used to draw each line of the polygon */
-    int i; /* index iterating over vertices */
+    int v; /* index iterating over vertices */
 
-    if (polygon.vertices_length <= 0)
+    if (polygon.vertices_length < 3)
     {
+        /* not a polygon */
         return;
     }
 
-    for (i = 0; i < polygon.vertices_length; i++)
+    for (v = 0; v < polygon.vertices_length; v++)
     {
-        a = polygon.vertices[i];
-        b = i == polygon.vertices_length - 1 ? polygon.vertices[0] : polygon.vertices[i + 1];
-        line.a = a;
-        line.b = b;
+        line.a = polygon.vertices[v];
+        line.b = v == polygon.vertices_length - 1 ? polygon.vertices[0] : polygon.vertices[v + 1];
         line.color = polygon.color;
 
         draw_line(context, line);
