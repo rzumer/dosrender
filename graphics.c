@@ -129,6 +129,7 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
     uchar *buffer; /* points to the screen buffer */
     uchar line_color; /* holds the color (border or fill) used when drawing a horizontal line */
     int y; /* scanline index for the draw loop */
+    const int border_size = 1;
 
     underflow.x = MAX(rectangle.offset.x * -1, 0);
     underflow.y = MAX(rectangle.offset.y * -1, 0);
@@ -150,7 +151,7 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
     {
         /* draw a full scanline of either the border or the fill color, depending on the current line */
         line_color =
-            y == 0 || y == (rectangle.dimensions.y) ?
+            y == 0 || y == (rectangle.dimensions.y - border_size) ?
             rectangle.border_color : rectangle.fill_color;
 
         if (line_color)
@@ -159,7 +160,7 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
             _fmemset(
                 (void *)(buffer + y * context->screen_size.x),
                 line_color,
-                rectangle.dimensions.x - overflow.x - underflow.x);
+                rectangle.dimensions.x - overflow.x - underflow.x - border_size);
         }
 
         /* draw the border */
@@ -174,7 +175,9 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
             if (rectangle.offset.x + rectangle.dimensions.x >= 0 &&
                 rectangle.offset.x + rectangle.dimensions.x < context->screen_size.x)
             {
-                *(buffer + y * context->screen_size.x + rectangle.dimensions.x - overflow.x - underflow.x) = rectangle.border_color;
+                *(buffer + y * context->screen_size.x +
+                    rectangle.dimensions.x - overflow.x - underflow.x - border_size) =
+                    rectangle.border_color;
             }
         }
     }
@@ -255,7 +258,7 @@ Rectangle scale_rectangle(GraphicsContext *context, Rectangle rectangle, float s
         scaled_rectangle.offset.y += scaled_rectangle.dimensions.y;
         scaled_rectangle.dimensions.y = offset - scaled_rectangle.offset.y;
     }
-    
+
     return scaled_rectangle;
 }
 
