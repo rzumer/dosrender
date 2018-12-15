@@ -135,7 +135,10 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
     overflow.x = MAX((rectangle.offset.x + rectangle.dimensions.x - context->screen_size.x), 0);
     overflow.y = MAX((rectangle.offset.y + rectangle.dimensions.y - context->screen_size.y), 0);
 
-    if (rectangle.offset.x >= context->screen_size.x || rectangle.offset.y >= context->screen_size.y)
+    if (rectangle.offset.x >= context->screen_size.x ||
+        rectangle.offset.y >= context->screen_size.y ||
+        rectangle.dimensions.x <= 0 ||
+        rectangle.dimensions.y <= 0)
     {
         return;
     }
@@ -225,6 +228,35 @@ Line scale_line(GraphicsContext *context, Line line, float scale_x, float scale_
     scaled_line.color = line.color;
 
     return scaled_line;
+}
+
+Rectangle scale_rectangle(GraphicsContext *context, Rectangle rectangle, float scale_x, float scale_y)
+{
+    Rectangle scaled_rectangle;
+    int offset; /* holds the offset when swapping values due to mirroring */
+
+    scaled_rectangle.offset = rectangle.offset;
+    scaled_rectangle.dimensions.x = rectangle.dimensions.x * scale_x;
+    scaled_rectangle.dimensions.y = rectangle.dimensions.y * scale_y;
+    scaled_rectangle.border_color = rectangle.border_color;
+    scaled_rectangle.fill_color = rectangle.fill_color;
+
+    /* handle mirroring */
+    if (scale_x < 0)
+    {
+        offset = scaled_rectangle.offset.x;
+        scaled_rectangle.offset.x += scaled_rectangle.dimensions.x;
+        scaled_rectangle.dimensions.x = offset - scaled_rectangle.offset.x;
+    }
+
+    if (scale_y < 0)
+    {
+        offset = scaled_rectangle.offset.y;
+        scaled_rectangle.offset.y += scaled_rectangle.dimensions.y;
+        scaled_rectangle.dimensions.y = offset - scaled_rectangle.offset.y;
+    }
+    
+    return scaled_rectangle;
 }
 
 /* Scales a polygon around its origin. Negative scale factors allow mirroring. */
