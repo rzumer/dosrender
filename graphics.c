@@ -39,6 +39,20 @@ void update_buffer(GraphicsContext *context)
     _fmemcpy((void *)(context->screen), (void *)(context->off_screen), context->screen_size.x * context->screen_size.y);
 }
 
+void draw_pixel(GraphicsContext *context, Coordinates point, uchar color)
+{
+    uchar *buffer; /* points to the screen buffer */
+
+    if (point.x < 0 || point.y < 0 || point.x >= context->screen_size.x || point.y >= context->screen_size.y)
+    {
+        return;
+    }
+
+    buffer = (uchar *)(context->off_screen + point.y * context->screen_size.x + point.y);
+
+    *(buffer) = color;
+}
+
 /* Draws a rectangle on the screen with arbitrary border and fill colors (0 is transparent). */
 void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
 {
@@ -64,7 +78,7 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
     {
         /* draw a full scanline of either the border or the fill color, depending on the current line */
         line_color =
-            y == 0 || y == (rectangle.dimensions.y - 1) ?
+            y == 0 || y == (rectangle.dimensions.y) ?
             rectangle.border_color : rectangle.fill_color;
 
         if (line_color)
@@ -104,6 +118,7 @@ void draw_line(GraphicsContext *context, Line line)
     int x = line.a.x; /* horizontal index */
     int y = line.a.y; /* vertical index */
     int vertical; /* iterate over y instead of x, for lines with large slopes */
+    int converged; /* used to determine when to break out of the draw loop */
 
     delta.x = line.b.x - line.a.x;
     delta.y = line.b.y - line.a.y;
@@ -134,6 +149,8 @@ void draw_line(GraphicsContext *context, Line line)
 
     do
     {
+        converged = x >= line.b.x && y >= line.b.y;
+
         if (x >= 0 && y >= 0 && x < context->screen_size.x && y < context->screen_size.y)
         {
             *(buffer + y * context->screen_size.x + x) = line.color;
@@ -156,5 +173,29 @@ void draw_line(GraphicsContext *context, Line line)
         }
 
         vertical ? y++ : x++;
-    } while (x < line.b.x || y < line.b.y);
+    } while (!converged);
+}
+
+/* Draws an arbitrary polygon, with a given border color. */
+void draw_polygon(GraphicsContext *context, Coordinates *vertices, int vertices_length, uchar color)
+{
+    Coordinates a, b; /* holds coordinates used to draw each line of the polygon */
+    Line line; /* holds parameters used to draw each line of the polygon */
+    int i; /* index iterating over vertices */
+
+    if (vertices_length <= 0)
+    {
+        return;
+    }
+
+    for (i = 0; i < vertices_length; i++)
+    {
+        a = vertices[i];
+        b = i == vertices_length - 1 ? vertices[0] : vertices[i + 1];
+        line.a = a;
+        line.b = b;
+        line.color = color;
+
+        draw_line(context, line);
+    }
 }

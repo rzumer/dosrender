@@ -2,15 +2,23 @@
 Graphics rendering engine/demo for 16-bit DOS with mode 13 hex.
 
 ## Features
+- [x] Lines
+  - [x] Arbitrary slope
+  - [x] Arbitrary color
+  - [x] Out-of-bounds support
+  - [ ] Transformation support
 - [x] Rectangles
   - [x] Arbitrary size
   - [x] Arbitrary border and fill colors
   - [x] Transparency support
   - [x] Out-of-bounds support
-- [x] Straight Lines
-  - [x] Arbitrary slope
-  - [x] Arbitrary color
+  - [ ] Transformation support
+- [x] Free-form polygons
+  - [x] Arbitrary sides
+  - [x] Arbitrary border color
   - [x] Out-of-bounds support
+  - [ ] Arbitrary fill color
+  - [ ] Transformation support
 - [ ] Sprites
 - [ ] Text
 

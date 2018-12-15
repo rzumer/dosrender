@@ -49,7 +49,9 @@ typedef struct Line
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
 void update_buffer(GraphicsContext *context);
+void draw_pixel(GraphicsContext *context, Coordinates point, uchar color);
 void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
 void draw_line(GraphicsContext *context, Line line);
+void draw_polygon(GraphicsContext *context, Coordinates *vertices, int vertices_length, uchar color);
 
 #endif /* GRAPHICS_H */
