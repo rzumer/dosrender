@@ -42,7 +42,7 @@ void update_buffer(GraphicsContext *context)
 Polygon clone_polygon(Polygon polygon)
 {
     Polygon cloned_polygon = polygon;
-    size_t vertices_size = polygon.vertices_length * sizeof(Coordinates);
+    size_t vertices_size = polygon.vertices_length * sizeof(*(polygon.vertices));
     cloned_polygon.vertices = malloc(vertices_size);
     memcpy(cloned_polygon.vertices, polygon.vertices, vertices_size);
 
