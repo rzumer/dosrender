@@ -18,11 +18,19 @@
 /* Input status port, to check rendering status. */
 #define INPUT_STATUS 0x3DA
 
+typedef enum Axis
+{
+    AXIS_X,
+    AXIS_Y,
+    AXIS_Z
+} Axis;
+
 /* Represents a set of coordinates in 2D space. */
 typedef struct Coordinates
 {
     int x;
     int y;
+    int z;
 } Coordinates;
 
 typedef struct GraphicsContext
@@ -80,7 +88,7 @@ Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y);
 
 Coordinates rotate_vertex(Coordinates vertex, Coordinates origin, float angle);
 Line rotate_line(Line line, float angle);
-Polygon rotate_polygon(Polygon polygon, float angle);
+Polygon rotate_polygon(Polygon polygon, float angle, Axis axis);
 
 Coordinates shear_vertex(Coordinates vertex, Coordinates origin, float shear_x, float shear_y);
 Line shear_line(Line line, float shear_x, float shear_y);

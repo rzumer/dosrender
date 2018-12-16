@@ -55,7 +55,7 @@ Coordinates apply_transformation(Coordinates vertex, const Coordinates origin, c
     Matrix vertex_matrix = { 3, 1, NULL };
     Matrix transformation_matrix = { 3, 3, NULL };
 
-    if (vertex.x != origin.x || vertex.y != origin.y)
+    if (vertex.x != origin.x || vertex.y != origin.y || vertex.z != origin.z)
     {
         vertex_matrix.data = malloc(vertex_matrix.rows * vertex_matrix.columns *
             sizeof(*transformation.data));
@@ -64,14 +64,15 @@ Coordinates apply_transformation(Coordinates vertex, const Coordinates origin, c
         /* translate such that the origin is at (0, 0) */
         vertex_matrix.data[0] = vertex.x - origin.x;
         vertex_matrix.data[1] = vertex.y - origin.y;
-        vertex_matrix.data[2] = 1.0f;
+        vertex_matrix.data[2] = vertex.z - origin.z;
 
         /* matrix operation */
         vertex_matrix = matrix_product(transformation_matrix, vertex_matrix);
 
         /* translate back to origin-adjusted coordinates */
-        vertex.x = vertex_matrix.data[0] + origin.x;
-        vertex.y = vertex_matrix.data[1] + origin.y;
+        vertex.x = (int)(vertex_matrix.data[0] + 0.5) + origin.x;
+        vertex.y = (int)(vertex_matrix.data[1] + 0.5) + origin.y;
+        vertex.z = (int)(vertex_matrix.data[2] + 0.5) + origin.z;
 
         free(vertex_matrix.data);
     }
@@ -303,7 +304,6 @@ Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y)
     return scaled_rectangle;
 }
 
-/* Scales a polygon around its origin. Negative scale factors allow mirroring. */
 Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y)
 {
     Polygon scaled_polygon = clone_polygon(polygon);
@@ -342,17 +342,34 @@ Line rotate_line(Line line, float angle)
     return rotated_line;
 }
 
-/* Rotates a polygon around its origin. */
-Polygon rotate_polygon(Polygon polygon, float angle)
+Polygon rotate_polygon(Polygon polygon, float angle, Axis axis)
 {
     Polygon rotated_polygon = clone_polygon(polygon);
     float radians = angle * M_PI / 180.0f;
 
     Matrix3x3 rotation_transformation = MATRIX_3X3_IDENTITY;
-    rotation_transformation.data[0][0] = cos(radians);
-    rotation_transformation.data[0][1] = -sin(radians);
-    rotation_transformation.data[1][0] = sin(radians);
-    rotation_transformation.data[1][1] = cos(radians);
+
+    switch (axis)
+    {
+        case AXIS_X:
+        rotation_transformation.data[1][1] = cos(radians);
+        rotation_transformation.data[1][2] = -sin(radians);
+        rotation_transformation.data[2][1] = sin(radians);
+        rotation_transformation.data[2][2] = cos(radians);
+        break;
+        case AXIS_Y:
+        rotation_transformation.data[2][2] = cos(radians);
+        rotation_transformation.data[2][0] = -sin(radians);
+        rotation_transformation.data[0][2] = sin(radians);
+        rotation_transformation.data[0][0] = cos(radians);
+        break;
+        case AXIS_Z:
+        rotation_transformation.data[0][0] = cos(radians);
+        rotation_transformation.data[0][1] = -sin(radians);
+        rotation_transformation.data[1][0] = sin(radians);
+        rotation_transformation.data[1][1] = cos(radians);
+        break;
+    }
 
     rotated_polygon.transformation = matrix3x3_product(rotation_transformation, polygon.transformation);
 
