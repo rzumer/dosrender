@@ -388,19 +388,15 @@ Line shear_line(Line line, float shear_x, float shear_y)
     return shorn_line;
 }
 
-/* Shears a polygon around its origin. */
 Polygon shear_polygon(Polygon polygon, float shear_x, float shear_y)
 {
-    Coordinates origin = polygon.vertices[0];
     Polygon shorn_polygon = clone_polygon(polygon);
-    int v; /* vertex index */
 
-    shorn_polygon.vertices[0] = origin;
+    Matrix3x3 shear_transformation = MATRIX_3X3_IDENTITY;
+    shear_transformation.data[0][1] = shear_x;
+    shear_transformation.data[1][0] = shear_y;
 
-    for (v = 1; v < polygon.vertices_length; v++)
-    {
-        shorn_polygon.vertices[v] = shear_vertex(polygon.vertices[v], origin, shear_x, shear_y);
-    }
+    shorn_polygon.transformation = matrix3x3_product(shear_transformation, polygon.transformation);
 
     return shorn_polygon;
 }
