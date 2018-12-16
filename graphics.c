@@ -344,16 +344,16 @@ Line rotate_line(Line line, float angle)
 /* Rotates a polygon around its origin. */
 Polygon rotate_polygon(Polygon polygon, float angle)
 {
-    Coordinates origin = polygon.vertices[0];
     Polygon rotated_polygon = clone_polygon(polygon);
-    int v; /* vertex index */
+    float radians = angle * M_PI / 180.0f;
 
-    rotated_polygon.vertices[0] = origin;
+    Matrix3x3 rotation_transformation = MATRIX_3X3_IDENTITY;
+    rotation_transformation.data[0][0] = cos(radians);
+    rotation_transformation.data[0][1] = -sin(radians);
+    rotation_transformation.data[1][0] = sin(radians);
+    rotation_transformation.data[1][1] = cos(radians);
 
-    for (v = 1; v < polygon.vertices_length; v++)
-    {
-        rotated_polygon.vertices[v] = rotate_vertex(polygon.vertices[v], origin, angle);
-    }
+    rotated_polygon.transformation = matrix3x3_product(rotation_transformation, polygon.transformation);
 
     return rotated_polygon;
 }
