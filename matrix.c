@@ -36,3 +36,21 @@ Matrix3x3 matrix3x3_product(Matrix3x3 a, Matrix3x3 b)
 
     return output;
 }
+
+Matrix matrix_transpose(Matrix input)
+{
+    Matrix output;
+    int i, j; /* row and column indices for iterating over matrix elements */
+
+    output.rows = input.columns;
+    output.columns = input.rows;
+    output.data = malloc(output.rows * output.columns * sizeof(*input.data));
+
+    for (i = 0; i < output.rows; i++)
+        for (j = 0; j < output.columns; j++)
+        {
+            *(output.data + i * output.columns + j) = *(input.data + j * input.columns + i);
+        }
+
+    return output;
+}
