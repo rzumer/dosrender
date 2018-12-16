@@ -1,14 +1,17 @@
-# Open Watcom Project Files
+# Open Watcom project files
 *.wpj
 *.tgt
 
-# Open Watcom Artifacts
+# Open Watcom artifacts
 *.err
 
-# Borland Turbo C Artifacts
+# Borland Turbo C project files
+*.prj
+
+# Borland Turbo C artifacts
 *.bak
 
-# Build Artifacts
+# Build artifacts
 *.lk1
 *.map
 *.mk
