@@ -49,31 +49,34 @@ Polygon clone_polygon(Polygon polygon)
     return cloned_polygon;
 }
 
-Coordinates apply_transformation(Coordinates vertex, Coordinates origin, Matrix3x3 transformation)
+/* Transforms a given vertex based on an origin point and a transformation matrix. */
+Coordinates apply_transformation(Coordinates vertex, const Coordinates origin, const Matrix3x3 transformation)
 {
-    Coordinates transformed_coordinates;
     Matrix vertex_matrix = { 3, 1, NULL };
     Matrix transformation_matrix = { 3, 3, NULL };
 
-    /* translate such that the origin is at (0, 0) */
-    vertex.x -= origin.x;
-    vertex.y -= origin.y;
+    if (vertex.x != origin.x || vertex.y != origin.y)
+    {
+        vertex_matrix.data = malloc(vertex_matrix.rows * vertex_matrix.columns *
+            sizeof(*transformation.data));
+        transformation_matrix.data = (float *)transformation.data;
 
-    /* matrix operation */
-    transformation_matrix.data = (float *)transformation.data;
-    vertex_matrix.data[0] = vertex.x;
-    vertex_matrix.data[1] = vertex.y;
-    vertex_matrix.data[2] = 1.0f;
+        /* translate such that the origin is at (0, 0) */
+        vertex_matrix.data[0] = vertex.x - origin.x;
+        vertex_matrix.data[1] = vertex.y - origin.y;
+        vertex_matrix.data[2] = 1.0f;
 
-    vertex_matrix = matrix_product(transformation_matrix, vertex_matrix);
-    transformed_coordinates.x = vertex_matrix.data[0];
-    transformed_coordinates.y = vertex_matrix.data[1];
+        /* matrix operation */
+        vertex_matrix = matrix_product(transformation_matrix, vertex_matrix);
 
-    /* restore the coordinates */
-    transformed_coordinates.x += origin.x;
-    transformed_coordinates.y += origin.y;
+        /* translate back to origin-adjusted coordinates */
+        vertex.x = vertex_matrix.data[0] + origin.x;
+        vertex.y = vertex_matrix.data[1] + origin.y;
 
-    return transformed_coordinates;
+        free(vertex_matrix.data);
+    }
+
+    return vertex;
 }
 
 /* Draws a single point on the screen. */
