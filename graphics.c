@@ -54,23 +54,12 @@ Coordinates apply_transformation(Coordinates vertex, Coordinates origin, Matrix3
     Coordinates transformed_coordinates;
     Matrix vertex_matrix = { 3, 1, NULL };
     Matrix transformation_matrix = { 3, 3, NULL };
-    Matrix3x3 composed_transformation = transformation;
-    Matrix3x3 translation = MATRIX_3X3_IDENTITY;
 
-    if (vertex.x != origin.x || vertex.y != origin.y)
-    {
-        translation.data[0][2] = origin.x;
-        translation.data[1][2] = origin.y;
-        /* compose with the backwards translation */
-        composed_transformation = matrix3x3_product(translation, transformation);
+    /* translate such that the origin is at (0, 0) */
+    vertex.x -= origin.x;
+    vertex.y -= origin.y;
 
-        translation.data[0][2] *= -1;
-        translation.data[1][2] *= -1;
-        /* compose with the forwards translation */
-        composed_transformation = matrix3x3_product(transformation, translation);
-    }
-
-    /* final matrix operation */
+    /* matrix operation */
     transformation_matrix.data = (float *)transformation.data;
     vertex_matrix.data[0] = vertex.x;
     vertex_matrix.data[1] = vertex.y;
@@ -79,6 +68,10 @@ Coordinates apply_transformation(Coordinates vertex, Coordinates origin, Matrix3
     vertex_matrix = matrix_product(transformation_matrix, vertex_matrix);
     transformed_coordinates.x = vertex_matrix.data[0];
     transformed_coordinates.y = vertex_matrix.data[1];
+
+    /* restore the coordinates */
+    transformed_coordinates.x += origin.x;
+    transformed_coordinates.y += origin.y;
 
     return transformed_coordinates;
 }
