@@ -19,4 +19,6 @@ typedef struct Matrix3x3
 Matrix matrix_product(Matrix a, Matrix b);
 Matrix3x3 matrix3x3_product(Matrix3x3 a, Matrix3x3 b);
 
+#define MATRIX_3X3_IDENTITY { { { 1.0f, 0.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f } } }
+
 #endif /* MATRIX_H */

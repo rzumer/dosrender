@@ -49,6 +49,40 @@ Polygon clone_polygon(Polygon polygon)
     return cloned_polygon;
 }
 
+Coordinates apply_transformation(Coordinates vertex, Coordinates origin, Matrix3x3 transformation)
+{
+    Coordinates transformed_coordinates;
+    Matrix vertex_matrix = { 3, 1, NULL };
+    Matrix transformation_matrix = { 3, 3, NULL };
+    Matrix3x3 composed_transformation = transformation;
+    Matrix3x3 translation = MATRIX_3X3_IDENTITY;
+
+    if (vertex.x != origin.x || vertex.y != origin.y)
+    {
+        translation.data[0][2] = origin.x;
+        translation.data[1][2] = origin.y;
+        /* compose with the backwards translation */
+        composed_transformation = matrix3x3_product(translation, transformation);
+
+        translation.data[0][2] *= -1;
+        translation.data[1][2] *= -1;
+        /* compose with the forwards translation */
+        composed_transformation = matrix3x3_product(transformation, translation);
+    }
+
+    /* final matrix operation */
+    transformation_matrix.data = (float *)transformation.data;
+    vertex_matrix.data[0] = vertex.x;
+    vertex_matrix.data[1] = vertex.y;
+    vertex_matrix.data[2] = 1.0f;
+
+    vertex_matrix = matrix_product(transformation_matrix, vertex_matrix);
+    transformed_coordinates.x = vertex_matrix.data[0];
+    transformed_coordinates.y = vertex_matrix.data[1];
+
+    return transformed_coordinates;
+}
+
 /* Draws a single point on the screen. */
 void draw_point(GraphicsContext *context, Point point)
 {
@@ -198,6 +232,7 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
     Line line; /* holds parameters used to draw each line of the polygon */
     int v; /* index iterating over vertices */
+    Coordinates origin = polygon.vertices[0]; /* origin point used to apply transformations */
 
     if (polygon.vertices_length < 3)
     {
@@ -210,6 +245,10 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
         line.a = polygon.vertices[v];
         line.b = v == polygon.vertices_length - 1 ? polygon.vertices[0] : polygon.vertices[v + 1];
         line.color = polygon.color;
+
+        /* apply transformation */
+        line.a = apply_transformation(line.a, origin, polygon.transformation);
+        line.b = apply_transformation(line.b, origin, polygon.transformation);
 
         draw_line(context, line);
     }

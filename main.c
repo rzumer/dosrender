@@ -25,8 +25,8 @@ int main(void) {
     Rectangle rect1 = { { 60, 60 }, { 200, 100 }, 0x20, 0x36 };
     Coordinates rect1_coords[4] = { { 60, 60 }, { 260, 60 }, { 260, 160 }, { 60, 160 } };
     Coordinates triangle_coords[3] = { { 70, 50 }, { 10, 120 }, { 150, 120 } };
-    Polygon rect1_polygon = { NULL, 4, 9 };
-    Polygon triangle = { NULL, 3, 0x28 };
+    Polygon rect1_polygon = { NULL, 4, 9, MATRIX_3X3_IDENTITY };
+    Polygon triangle = { NULL, 3, 0x28, MATRIX_3X3_IDENTITY };
     Rectangle rect2 = { { -50, -50 }, { 150, 97 }, 0x0E, (uchar)NULL };
     Line line = { { -30, -10 }, { 100, 120 }, 2 };
     Point point = { { 100, 100 }, 10 };

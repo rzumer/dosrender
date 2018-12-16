@@ -13,6 +13,7 @@
 #include <mem.h>
 #include <stdlib.h>
 #include "common.h"
+#include "matrix.h"
 
 /* Input status port, to check rendering status. */
 #define INPUT_STATUS 0x3DA
@@ -57,6 +58,7 @@ typedef struct Polygon
     Coordinates *vertices;
     int vertices_length;
     uchar color;
+    Matrix3x3 transformation;
 } Polygon;
 
 Polygon clone_polygon(Polygon polygon);
@@ -64,6 +66,8 @@ Polygon clone_polygon(Polygon polygon);
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
 void update_buffer(GraphicsContext *context);
+
+Coordinates apply_transformation(Coordinates vertex, Coordinates origin, Matrix3x3 transformation);
 void draw_point(GraphicsContext *context, Point point);
 void draw_line(GraphicsContext *context, Line line);
 void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
