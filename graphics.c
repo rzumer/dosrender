@@ -303,16 +303,14 @@ Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y)
 /* Scales a polygon around its origin. Negative scale factors allow mirroring. */
 Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y)
 {
-    Coordinates origin = polygon.vertices[0];
     Polygon scaled_polygon = clone_polygon(polygon);
-    int v; /* vertex index */
 
-    scaled_polygon.vertices[0] = origin;
+    Matrix3x3 scaling_transformation = { 0 };
+    scaling_transformation.data[0][0] = scale_x;
+    scaling_transformation.data[1][1] = scale_y;
+    scaling_transformation.data[2][2] = 1.0f;
 
-    for (v = 1; v < polygon.vertices_length; v++)
-    {
-        scaled_polygon.vertices[v] = scale_vertex(polygon.vertices[v], origin, scale_x, scale_y);
-    }
+    scaled_polygon.transformation = matrix3x3_product(scaling_transformation, polygon.transformation);
 
     return scaled_polygon;
 }
