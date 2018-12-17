@@ -50,21 +50,23 @@ Polygon clone_polygon(Polygon polygon)
     return cloned_polygon;
 }
 
-Coordinates get_polygon_centroid(Polygon polygon)
+Coordinates get_polygon_centroid(Polygon *polygon)
 {
     int v;
+    double vertices_length = polygon->vertices_length;
     Coordinates centroid;
+    long x = 0, y = 0, z = 0;
 
-    for (v = 0; v < polygon.vertices_length; v++)
+    for (v = 0; v < vertices_length; v++)
     {
-        centroid.x += polygon.vertices[v].x;
-        centroid.y += polygon.vertices[v].y;
-        centroid.z += polygon.vertices[v].z;
+        x += polygon->vertices[v].x;
+        y += polygon->vertices[v].y;
+        z += polygon->vertices[v].z;
     }
 
-    centroid.x /= polygon.vertices_length;
-    centroid.y /= polygon.vertices_length;
-    centroid.z /= polygon.vertices_length;
+    centroid.x = CROUND(x / vertices_length);
+    centroid.y = CROUND(y / vertices_length);
+    centroid.z = CROUND(z / vertices_length);
 
     return centroid;
 }
@@ -72,13 +74,13 @@ Coordinates get_polygon_centroid(Polygon polygon)
 /* Transforms a given vertex based on an origin point and a transformation matrix. */
 Coordinates apply_transformation(Coordinates vertex, const Coordinates origin, const Matrix3x3 transformation)
 {
+    double vertex_data[3] = { 0 };
     Matrix vertex_matrix = { 3, 1, NULL };
     Matrix transformation_matrix = { 3, 3, NULL };
 
     if (vertex.x != origin.x || vertex.y != origin.y || vertex.z != origin.z)
     {
-        vertex_matrix.data = malloc(vertex_matrix.rows * vertex_matrix.columns *
-            sizeof(**transformation.data));
+        vertex_matrix.data = (double *)vertex_data;
         transformation_matrix.data = (double *)transformation.data;
 
         /* translate such that the origin is at (0, 0) */
@@ -90,9 +92,9 @@ Coordinates apply_transformation(Coordinates vertex, const Coordinates origin, c
         vertex_matrix = matrix_product(transformation_matrix, vertex_matrix);
 
         /* translate back to origin-adjusted coordinates */
-        vertex.x = ROUND(vertex_matrix.data[0]) + origin.x;
-        vertex.y = ROUND(vertex_matrix.data[1]) + origin.y;
-        vertex.z = ROUND(vertex_matrix.data[2]) + origin.z;
+        vertex.x = CROUND(vertex_matrix.data[0]) + origin.x;
+        vertex.y = CROUND(vertex_matrix.data[1]) + origin.y;
+        vertex.z = CROUND(vertex_matrix.data[2]) + origin.z;
     }
 
     return vertex;
@@ -249,7 +251,7 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
     Line line; /* holds parameters used to draw each line of the polygon */
     int v; /* index iterating over vertices */
-    Coordinates origin = get_polygon_centroid(polygon); /* origin point used to apply transformations */
+    Coordinates origin = get_polygon_centroid(&polygon); /* origin point used to apply transformations */
 
     if (polygon.vertices_length < 3)
     {
