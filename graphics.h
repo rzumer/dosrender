@@ -28,9 +28,9 @@ typedef enum Axis
 /* Represents a set of coordinates in 2D space. */
 typedef struct Coordinates
 {
-    double x;
-    double y;
-    double z;
+    coord_t x;
+    coord_t y;
+    coord_t z;
 } Coordinates;
 
 typedef struct GraphicsContext
@@ -70,7 +70,7 @@ typedef struct Polygon
 } Polygon;
 
 Polygon clone_polygon(Polygon polygon);
-Coordinates get_polygon_centroid(Polygon polygon);
+Coordinates get_polygon_centroid(Polygon *polygon);
 
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);

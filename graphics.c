@@ -3,7 +3,7 @@
 int init_context(GraphicsContext *context)
 {
     Coordinates screen_size = { 320, 200 }; /* Screen size in the target 13 hex BIOS mode */
-    uint buffer_size = UROUND(screen_size.x * screen_size.y);
+    long buffer_size = ROUND(screen_size.x * screen_size.y);
 
     context->screen_size = screen_size;
     context->off_screen = (uchar *)(farmalloc(buffer_size));
@@ -26,7 +26,7 @@ void free_context(GraphicsContext *context)
     farfree(context->off_screen);
 
     /* clear the screen content to avoid graphical bugs */
-    _fmemset((void *)(context->screen), 0, UROUND(context->screen_size.x * context->screen_size.y));
+    _fmemset((void *)(context->screen), 0, ROUND(context->screen_size.x * context->screen_size.y));
 }
 
 void update_buffer(GraphicsContext *context)
@@ -37,7 +37,7 @@ void update_buffer(GraphicsContext *context)
 
     /* copy the off-screen buffer to the video memory */
     _fmemcpy((void *)(context->screen), (void *)(context->off_screen),
-        UROUND(context->screen_size.x * context->screen_size.y));
+        CINT(context->screen_size.x * context->screen_size.y));
 }
 
 Polygon clone_polygon(Polygon polygon)
@@ -90,11 +90,9 @@ Coordinates apply_transformation(Coordinates vertex, const Coordinates origin, c
         vertex_matrix = matrix_product(transformation_matrix, vertex_matrix);
 
         /* translate back to origin-adjusted coordinates */
-        vertex.x = vertex_matrix.data[0] + origin.x;
-        vertex.y = vertex_matrix.data[1] + origin.y;
-        vertex.z = vertex_matrix.data[2] + origin.z;
-
-        free(vertex_matrix.data);
+        vertex.x = ROUND(vertex_matrix.data[0]) + origin.x;
+        vertex.y = ROUND(vertex_matrix.data[1]) + origin.y;
+        vertex.z = ROUND(vertex_matrix.data[2]) + origin.z;
     }
 
     return vertex;
@@ -121,9 +119,9 @@ void draw_line(GraphicsContext *context, Line line)
     uchar *buffer; /* points to the screen buffer */
     Coordinates delta; /* delta between the points */
     double delta_error; /* error delta per step */
-    double error = 0.0f; /* current error */
-    long x = ROUND(line.a.x); /* horizontal index */
-    long y = ROUND(line.a.y); /* vertical index */
+    double error = 0; /* current error */
+    long x = CINT(line.a.x); /* horizontal index */
+    long y = CINT(line.a.y); /* vertical index */
     int vertical; /* iterate over y instead of x, for lines with large slopes */
     int converged; /* used to determine when to break out of the draw loop */
 
@@ -136,8 +134,8 @@ void draw_line(GraphicsContext *context, Line line)
         return;
     }
 
-    vertical = fabs(delta.y) > fabs(delta.x);
-    delta_error = vertical ? fabs(delta.x / delta.y) : fabs(delta.y / delta.x);
+    vertical = cabs(delta.y) > cabs(delta.x);
+    delta_error = vertical ? fabs(delta.x / (double)delta.y) : fabs(delta.y / (double)delta.x);
 
     /* invert the line coordinates if needed */
     if (vertical ? line.b.y < line.a.y : line.b.x < line.a.x)
@@ -156,11 +154,11 @@ void draw_line(GraphicsContext *context, Line line)
 
     do
     {
-        converged = x >= (line.b.x - 0.5) && y >= (line.b.y - 0.5);
+        converged = x >= CINT(line.b.x) && y >= CINT(line.b.y);
 
         if (x >= 0 && y >= 0 && x < context->screen_size.x && y < context->screen_size.y)
         {
-            *(buffer + ROUND(y * context->screen_size.x + x)) = line.color;
+            *(buffer + CINT(y * context->screen_size.x + x)) = line.color;
         }
 
         error += delta_error;
@@ -281,8 +279,8 @@ Coordinates scale_vertex(Coordinates vertex, Coordinates origin, double scale_x,
     relative_vertex.x = vertex.x - origin.x;
     relative_vertex.y = vertex.y - origin.y;
 
-    scaled_vertex.x = relative_vertex.x * scale_x + origin.x;
-    scaled_vertex.y = relative_vertex.y * scale_y + origin.y;
+    scaled_vertex.x = CROUND(relative_vertex.x * scale_x) + origin.x;
+    scaled_vertex.y = CROUND(relative_vertex.y * scale_y) + origin.y;
 
     return scaled_vertex;
 }
@@ -328,12 +326,12 @@ Rectangle scale_rectangle(Rectangle rectangle, double scale_x, double scale_y)
 
 Polygon scale_polygon(Polygon polygon, double scale_x, double scale_y)
 {
-    Polygon scaled_polygon = clone_polygon(polygon);
+    Polygon scaled_polygon = polygon;
 
     Matrix3x3 scaling_transformation = { 0 };
     scaling_transformation.data[0][0] = scale_x;
     scaling_transformation.data[1][1] = scale_y;
-    scaling_transformation.data[2][2] = 1.0f;
+    scaling_transformation.data[2][2] = 1.0;
 
     scaled_polygon.transformation = matrix3x3_product(scaling_transformation, polygon.transformation);
 
@@ -344,13 +342,13 @@ Polygon scale_polygon(Polygon polygon, double scale_x, double scale_y)
 Coordinates rotate_vertex(Coordinates vertex, Coordinates origin, double angle)
 {
     Coordinates relative_vertex, rotated_vertex;
-    double radians = angle * M_PI / 180.0f;
+    double radians = angle * M_PI / 180.0;
 
     relative_vertex.x = vertex.x - origin.x;
     relative_vertex.y = vertex.y - origin.y;
 
-    rotated_vertex.x = relative_vertex.x * cos(radians) - relative_vertex.y * sin(radians) + origin.x;
-    rotated_vertex.y = relative_vertex.y * cos(radians) + relative_vertex.x * sin(radians) + origin.y;
+    rotated_vertex.x = CROUND(relative_vertex.x * cos(radians) - relative_vertex.y * sin(radians)) + origin.x;
+    rotated_vertex.y = CROUND(relative_vertex.y * cos(radians) + relative_vertex.x * sin(radians)) + origin.y;
 
     return rotated_vertex;
 }
@@ -366,8 +364,8 @@ Line rotate_line(Line line, double angle)
 
 Polygon rotate_polygon(Polygon polygon, double angle, Axis axis)
 {
-    Polygon rotated_polygon = clone_polygon(polygon);
-    double radians = angle * M_PI / 180.0f;
+    Polygon rotated_polygon = polygon;
+    double radians = angle * M_PI / 180.0;
 
     Matrix3x3 rotation_transformation = MATRIX_3X3_IDENTITY;
 
@@ -406,8 +404,8 @@ Coordinates shear_vertex(Coordinates vertex, Coordinates origin, double shear_x,
     relative_vertex.x = vertex.x - origin.x;
     relative_vertex.y = vertex.y - origin.y;
 
-    shorn_vertex.x = relative_vertex.x + shear_x * relative_vertex.y + origin.x;
-    shorn_vertex.y = relative_vertex.y + shear_y * relative_vertex.x + origin.y;
+    shorn_vertex.x = CROUND(relative_vertex.x + shear_x * relative_vertex.y) + origin.x;
+    shorn_vertex.y = CROUND(relative_vertex.y + shear_y * relative_vertex.x) + origin.y;
 
     return shorn_vertex;
 }
@@ -423,7 +421,7 @@ Line shear_line(Line line, double shear_x, double shear_y)
 
 Polygon shear_polygon(Polygon polygon, double shear_x, double shear_y)
 {
-    Polygon shorn_polygon = clone_polygon(polygon);
+    Polygon shorn_polygon = polygon;
 
     Matrix3x3 shear_transformation = MATRIX_3X3_IDENTITY;
     shear_transformation.data[0][1] = shear_x;

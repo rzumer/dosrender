@@ -11,6 +11,19 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define PRECISION_INTEGER 1
+#if PRECISION_INTEGER
+#define coord_t int
+#define cabs abs
+#define CROUND(x) ROUND((x))
+#define CINT(x) (x)
+#else
+#define coord_t double
+#define cabs fabs
+#define CROUND(x) (x)
+#define CINT(x) ROUND((x))
+#endif
+
 #define uchar unsigned char
 #define uint unsigned int
 #define ulong unsigned long
