@@ -249,18 +249,25 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
 /* Draws an arbitrary polygon, with a given border color. */
 void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
-    Coordinates *transformed_vertices = malloc(polygon.vertices_length * sizeof(*polygon.vertices));
+    Coordinates *transformed_vertices; /* copy of vertice coordinates post-transformation used for filling */
+    coord_t *node_x, swap; /* horizontal node coordinates for a polygon in a scanline, and swap variable for reordering */
+    int node_count; /* number of to evaluate during a scanline fill */
     Line line; /* holds parameters used to draw each line of the polygon */
-    int v, y; /* index iterating over vertices and scanlines */
+    int v, w, y; /* index iterating over vertices and scanlines */
     Coordinates origin = get_polygon_centroid(&polygon); /* origin point used to apply transformations */
-    int ymin = 0, ymax = 0, xmin, xmax;
-    int j, nodes, nodeX[255], swap;
-    uchar *buffer;
+    Coordinates min, max; /* extrema of the polygon image */
+    uchar *buffer; /* image buffer where to draw the polygon */
 
     if (polygon.vertices_length < 3)
     {
         /* not a polygon */
         return;
+    }
+
+    if (polygon.fill_color)
+    {
+        transformed_vertices = malloc(polygon.vertices_length * sizeof(*transformed_vertices));
+        node_x = malloc(polygon.vertices_length * sizeof(*node_x));
     }
 
     for (v = 0; v < polygon.vertices_length; v++)
@@ -276,8 +283,8 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
         if (polygon.fill_color)
         {
             /* update the polygon's minimum and maximum y coordinates for filling */
-            ymin = MIN(line.b.y, ymin);
-            ymax = MAX(line.b.y, ymax);
+            min.y = MIN(line.b.y, min.y);
+            max.y = MAX(line.b.y, max.y);
 
             if (v > 0)
             {
@@ -299,38 +306,39 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
     if (polygon.fill_color)
     {
         buffer = (uchar *)(context->off_screen);
-        ymin = MAX(ymin, 0);
-        ymax = MIN(ymax, CINT(context->screen_size.y) - 1);
+        min.y = MAX(min.y, 0);
+        max.y = MIN(max.y, context->screen_size.y - 1);
 
-        for (y = ymin; y < ymax; y++)
+        for (y = CINT(min.y); y < CINT(max.y); y++)
         {
-            nodes = 0;
-            j = polygon.vertices_length - 1;
+            node_count = 0;
+            w = polygon.vertices_length - 1;
 
             for (v = 0; v < polygon.vertices_length; v++)
             {
-                if (transformed_vertices[v].y < y && transformed_vertices[j].y >= y ||
-                    transformed_vertices[j].y < y && transformed_vertices[v].y >= y)
+                if (transformed_vertices[v].y < y && transformed_vertices[w].y >= y ||
+                    transformed_vertices[w].y < y && transformed_vertices[v].y >= y)
                 {
-                    nodeX[nodes++] = ROUND(transformed_vertices[v].x +
+                    node_x[node_count++] = ROUND(transformed_vertices[v].x +
                         (y - transformed_vertices[v].y) /
-                        (double)(transformed_vertices[j].y - transformed_vertices[v].y) *
-                        (transformed_vertices[j].x - transformed_vertices[v].x));
+                        (double)(transformed_vertices[w].y - transformed_vertices[v].y) *
+                        (transformed_vertices[w].x - transformed_vertices[v].x));
                 }
 
-                j = v;
+                w = v;
             }
 
             v = 0;
-            while (v < nodes - 1)
+            while (v < node_count - 1)
             {
-                if (nodeX[v] > nodeX[v + 1])
+                if (node_x[v] > node_x[v + 1])
                 {
-                    swap = nodeX[v];
-                    nodeX[v] = nodeX[v + 1];
-                    nodeX[v + 1] = swap;
+                    swap = node_x[v];
+                    node_x[v] = node_x[v + 1];
+                    node_x[v + 1] = swap;
 
-                    if (v) v--;
+                    if (v)
+                        v--;
                 }
                 else
                 {
@@ -338,23 +346,24 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
                 }
             }
 
-            for (v = 0; v < nodes; v += 2)
+            for (v = 0; v < node_count; v += 2)
             {
-                if (nodeX[v] >= context->screen_size.x)
+                if (node_x[v] >= context->screen_size.x)
                     break;
 
-                if (nodeX[v + 1] > 0)
+                if (node_x[v + 1] > 0)
                 {
-                    xmin = MAX(nodeX[v], 0);
-                    xmax = MIN(nodeX[v + 1], context->screen_size.x - 1);
+                    min.x = MAX(node_x[v], 0);
+                    max.x = MIN(node_x[v + 1], context->screen_size.x - 1);
 
-                    _fmemset(buffer + CROUND(y * context->screen_size.x + xmin), polygon.fill_color, xmax - xmin);
+                    _fmemset(buffer + CINT(y * context->screen_size.x + min.x), polygon.fill_color, CINT(max.x - min.x));
                 }
             }
         }
-    }
 
-    free(transformed_vertices);
+        free(transformed_vertices);
+        free(node_x);
+    }
 }
 
 /* Scales a vertex around an origin point. */
