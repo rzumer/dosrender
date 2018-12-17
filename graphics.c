@@ -250,8 +250,11 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
 void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
     Line line; /* holds parameters used to draw each line of the polygon */
-    int v; /* index iterating over vertices */
+    int v, y; /* index iterating over vertices and scanlines */
     Coordinates origin = get_polygon_centroid(&polygon); /* origin point used to apply transformations */
+    int ymin = 0, ymax = 0, xmin, xmax;
+    int j, nodes, nodeX[255], swap;
+    uchar *buffer;
 
     if (polygon.vertices_length < 3)
     {
@@ -263,13 +266,91 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
     {
         line.a = polygon.vertices[v];
         line.b = v == polygon.vertices_length - 1 ? polygon.vertices[0] : polygon.vertices[v + 1];
-        line.color = polygon.color;
+        line.color = polygon.border_color;
 
         /* apply transformation */
         line.a = apply_transformation(line.a, origin, polygon.transformation);
         line.b = apply_transformation(line.b, origin, polygon.transformation);
 
-        draw_line(context, line);
+        if (polygon.fill_color)
+        {
+            /* update the polygon's minimum and maximum y coordinates for filling */
+            ymin = MIN(line.b.y, ymin);
+            ymax = MAX(line.b.y, ymax);
+
+            if (v > 0)
+            {
+                polygon.vertices[v] = line.a;
+            }
+
+            if (v == polygon.vertices_length - 1)
+            {
+                polygon.vertices[0] = line.b;
+            }
+        }
+
+        if (polygon.border_color)
+        {
+            draw_line(context, line);
+        }
+    }
+
+    if (polygon.fill_color)
+    {
+        buffer = (uchar *)(context->off_screen);
+        ymin = MAX(ymin, 0);
+        ymax = MIN(ymax, CINT(context->screen_size.y) - 1);
+
+        for (y = ymin; y < ymax; y++)
+        {
+            nodes = 0;
+            j = polygon.vertices_length - 1;
+
+            for (v = 0; v < polygon.vertices_length; v++)
+            {
+                if (polygon.vertices[v].y < y && polygon.vertices[j].y >= y ||
+                    polygon.vertices[j].y < y && polygon.vertices[v].y >= y)
+                {
+                    nodeX[nodes++] = ROUND(polygon.vertices[v].x +
+                        (y - polygon.vertices[v].y) /
+                        (double)(polygon.vertices[j].y - polygon.vertices[v].y) *
+                        (polygon.vertices[j].x - polygon.vertices[v].x));
+                }
+
+                j = v;
+            }
+
+            v = 0;
+            while (v < nodes - 1)
+            {
+                if (nodeX[v] > nodeX[v + 1])
+                {
+                    swap = nodeX[v];
+                    nodeX[v] = nodeX[v + 1];
+                    nodeX[v + 1] = swap;
+
+                    if (v) v--;
+                }
+                else
+                {
+                    v++;
+                }
+            }
+
+            for (v = 0; v < nodes; v += 2)
+            {
+                if (nodeX[v] >= context->screen_size.x)
+                    break;
+
+                if (nodeX[v + 1] > 0)
+                {
+                    xmin = MAX(nodeX[v], 0);
+                    xmax = MIN(nodeX[v + 1], context->screen_size.x - 1);
+
+                    _fmemset(buffer + CROUND(y * context->screen_size.x + xmin), polygon.fill_color, xmax - xmin);
+                }
+            }
+        }
     }
 }
 

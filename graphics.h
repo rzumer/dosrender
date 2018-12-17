@@ -65,7 +65,8 @@ typedef struct Polygon
 {
     Coordinates *vertices;
     int vertices_length;
-    uchar color;
+    uchar border_color;
+    uchar fill_color;
     Matrix3x3 transformation;
 } Polygon;
 
