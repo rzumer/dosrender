@@ -54,22 +54,19 @@ int main(void) {
     /* render graphics */
     draw_polygon(&context, rect1_polygon);
     draw_polygon(&context, rect2_polygon);
-    draw_polygon(&context, clone_polygon(triangle_polygon));
+    draw_polygon(&context, triangle_polygon);
 
     update_buffer(&context);
 
-    for (r = 0; r < 2; r++)
+    for (r = 0; r < 100; r++)
     {
         triangle_polygon.border_color = 255;
         triangle_polygon.fill_color = 255;
-        draw_polygon(&context, clone_polygon(triangle_polygon));
-        sleep(1);
-        update_buffer(&context);
+        draw_polygon(&context, triangle_polygon);
         triangle_polygon.border_color = 0x28;
         triangle_polygon.fill_color = 14;
-        //triangle_polygon = rotate_polygon(triangle_polygon, 30.0, AXIS_Z);
-        draw_polygon(&context, clone_polygon(triangle_polygon));
-        sleep(1);
+        triangle_polygon = rotate_polygon(triangle_polygon, 30.0, AXIS_Z);
+        draw_polygon(&context, triangle_polygon);
         update_buffer(&context);
     }
 

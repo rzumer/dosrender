@@ -249,6 +249,7 @@ void draw_rectangle(GraphicsContext *context, Rectangle rectangle)
 /* Draws an arbitrary polygon, with a given border color. */
 void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
+    Coordinates *transformed_vertices = malloc(polygon.vertices_length * sizeof(*polygon.vertices));
     Line line; /* holds parameters used to draw each line of the polygon */
     int v, y; /* index iterating over vertices and scanlines */
     Coordinates origin = get_polygon_centroid(&polygon); /* origin point used to apply transformations */
@@ -280,12 +281,12 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
 
             if (v > 0)
             {
-                polygon.vertices[v] = line.a;
+                transformed_vertices[v] = line.a;
             }
 
             if (v == polygon.vertices_length - 1)
             {
-                polygon.vertices[0] = line.b;
+                transformed_vertices[0] = line.b;
             }
         }
 
@@ -308,13 +309,13 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
 
             for (v = 0; v < polygon.vertices_length; v++)
             {
-                if (polygon.vertices[v].y < y && polygon.vertices[j].y >= y ||
-                    polygon.vertices[j].y < y && polygon.vertices[v].y >= y)
+                if (transformed_vertices[v].y < y && transformed_vertices[j].y >= y ||
+                    transformed_vertices[j].y < y && transformed_vertices[v].y >= y)
                 {
-                    nodeX[nodes++] = ROUND(polygon.vertices[v].x +
-                        (y - polygon.vertices[v].y) /
-                        (double)(polygon.vertices[j].y - polygon.vertices[v].y) *
-                        (polygon.vertices[j].x - polygon.vertices[v].x));
+                    nodeX[nodes++] = ROUND(transformed_vertices[v].x +
+                        (y - transformed_vertices[v].y) /
+                        (double)(transformed_vertices[j].y - transformed_vertices[v].y) *
+                        (transformed_vertices[j].x - transformed_vertices[v].x));
                 }
 
                 j = v;
@@ -352,6 +353,8 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
             }
         }
     }
+
+    free(transformed_vertices);
 }
 
 /* Scales a vertex around an origin point. */
