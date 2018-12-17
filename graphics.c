@@ -264,12 +264,12 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
 
     for (v = 0; v < polygon.vertices_length; v++)
     {
-        line.a = polygon.vertices[v];
+        line.a = v > 0 ? line.b : polygon.vertices[v];
         line.b = v == polygon.vertices_length - 1 ? polygon.vertices[0] : polygon.vertices[v + 1];
         line.color = polygon.border_color;
 
         /* apply transformation */
-        line.a = apply_transformation(line.a, origin, polygon.transformation);
+        line.a = v == 0 ? apply_transformation(line.a, origin, polygon.transformation) : line.a;
         line.b = apply_transformation(line.b, origin, polygon.transformation);
 
         if (polygon.fill_color)
