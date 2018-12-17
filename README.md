@@ -1,6 +1,13 @@
 # dosrender
 Graphics rendering engine/demo for 16-bit DOS with mode 13 hex.
 
+## Summary
+This project is designed to support 16-bit graphical applications targeting DOS in mode 13h.
+The main goal is to achieve reasonable real-time rendering performance for mainly 2D applications, with some 3D support.
+
+The current version supports creation, transformation and rendering of lines and polygons, including solid color filling.
+Both integer and floating point coordinates are also supported, though the latter are currently unstable and disabled by default.
+
 ## Features
 - [x] Lines
   - [x] Arbitrary slope
