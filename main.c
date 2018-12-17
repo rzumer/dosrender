@@ -4,36 +4,36 @@
 
 int get_bios_mode(void)
 {
-    union REGS registers;
+    union REGS in, out;
 
-    registers.h.ah = 0xf;
-    int86(0x10, &registers, &registers);
-    return registers.h.al;
+    in.h.ah = 0xf;
+    int86(0x10, &in, &out);
+    return out.h.al;
 }
 
 void set_bios_mode(int mode)
 {
-    union REGS registers;
+    union REGS in, out;
 
-    registers.h.ah = 0x0;
-    registers.h.al = mode;
-    int86(0x10, &registers, &registers);
+    in.h.ah = 0x0;
+    in.h.al = mode;
+    int86(0x10, &in, &out);
 }
 
 int main(void) {
     GraphicsContext context = { { 0, 0 }, NULL, NULL };
-    Rectangle rect1 = { { 60, 60 }, { 200, 100 }, 0x20, 0x36 };
-    Coordinates rect1_coords[4] = { { 60, 60 }, { 260, 60 }, { 260, 160 }, { 60, 160 } };
-    Coordinates triangle_coords[3] = { { 70, 50 }, { 10, 120 }, { 150, 120 } };
-    Polygon rect1_polygon = { NULL, 4, 9, MATRIX_3X3_IDENTITY };
-    Polygon triangle = { NULL, 3, 0x28, MATRIX_3X3_IDENTITY };
-    Rectangle rect2 = { { -50, -50 }, { 150, 97 }, 0x0E, (uchar)NULL };
-    Line line = { { -30, -10 }, { 100, 120 }, 2 };
-    Point point = { { 100, 100 }, 10 };
+    Coordinates rect1_coords[4] = { { 10, 50 }, { 140, 90 }, { 140, 110 }, { 10, 150 } };
+    Coordinates rect2_coords[4] = { { 310, 50 }, { 180, 90 }, { 180, 110 }, { 310, 150 } };
+    Coordinates triangle_coords[3] = { { 160, 100 }, { 100, 170 }, { 220, 170 } };
+    Polygon rect1_polygon = { NULL, 4, 0x33, MATRIX_3X3_IDENTITY };
+    Polygon rect2_polygon = { NULL, 4, 0x33, MATRIX_3X3_IDENTITY };
+    Polygon triangle_polygon = { NULL, 3, 0x28, MATRIX_3X3_IDENTITY };
+
     int initial_bios_mode = get_bios_mode();
 
     rect1_polygon.vertices = &rect1_coords;
-    triangle.vertices = &triangle_coords;
+    rect2_polygon.vertices = &rect2_coords;
+    triangle_polygon.vertices = &triangle_coords;
 
     /* enter BIOS mode 13 hex */
     set_bios_mode(0x13);
@@ -47,20 +47,13 @@ int main(void) {
     }
 
     /* transform shapes */
-    rect1_polygon = scale_polygon(rect1_polygon, 1.24f, 1.0f);
-    rect1_polygon = shear_polygon(rect1_polygon, 1.0f, 0.0f);
-    line = scale_line(line, 2.0f, 1.0f);
-    rect1 = scale_rectangle(rect1, -1.0f, -1.0f);
-    triangle = rotate_polygon(triangle, 30.0f, AXIS_Z);
-    triangle = rotate_polygon(triangle, -20.0f, AXIS_X);
+    triangle_polygon = scale_polygon(triangle_polygon, 0.5f, 0.5f);
+    triangle_polygon = rotate_polygon(triangle_polygon, 75.0f, AXIS_X);
 
     /* render graphics */
-    draw_rectangle(&context, rect1);
-    draw_polygon(&context, rect1_polygon );
-    draw_line(&context, line);
-    draw_polygon(&context, triangle);
-    draw_point(&context, point);
-    draw_rectangle(&context, rect2);
+    draw_polygon(&context, rect1_polygon);
+    draw_polygon(&context, rect2_polygon);
+    draw_polygon(&context, triangle_polygon);
     update_buffer(&context);
     system("PAUSE");
 

@@ -28,9 +28,9 @@ typedef enum Axis
 /* Represents a set of coordinates in 2D space. */
 typedef struct Coordinates
 {
-    int x;
-    int y;
-    int z;
+    double x;
+    double y;
+    double z;
 } Coordinates;
 
 typedef struct GraphicsContext
@@ -82,17 +82,17 @@ void draw_line(GraphicsContext *context, Line line);
 void draw_rectangle(GraphicsContext *context, Rectangle rectangle);
 void draw_polygon(GraphicsContext *context, Polygon polygon);
 
-Coordinates scale_vertex(Coordinates vertex, Coordinates origin, float scale_x, float scale_y);
-Line scale_line(Line line, float scale_x, float scale_y);
-Rectangle scale_rectangle(Rectangle rectangle, float scale_x, float scale_y);
-Polygon scale_polygon(Polygon polygon, float scale_x, float scale_y);
+Coordinates scale_vertex(Coordinates vertex, Coordinates origin, double scale_x, double scale_y);
+Line scale_line(Line line, double scale_x, double scale_y);
+Rectangle scale_rectangle(Rectangle rectangle, double scale_x, double scale_y);
+Polygon scale_polygon(Polygon polygon, double scale_x, double scale_y);
 
-Coordinates rotate_vertex(Coordinates vertex, Coordinates origin, float angle);
-Line rotate_line(Line line, float angle);
-Polygon rotate_polygon(Polygon polygon, float angle, Axis axis);
+Coordinates rotate_vertex(Coordinates vertex, Coordinates origin, double angle);
+Line rotate_line(Line line, double angle);
+Polygon rotate_polygon(Polygon polygon, double angle, Axis axis);
 
-Coordinates shear_vertex(Coordinates vertex, Coordinates origin, float shear_x, float shear_y);
-Line shear_line(Line line, float shear_x, float shear_y);
-Polygon shear_polygon(Polygon polygon, float shear_x, float shear_y);
+Coordinates shear_vertex(Coordinates vertex, Coordinates origin, double shear_x, double shear_y);
+Line shear_line(Line line, double shear_x, double shear_y);
+Polygon shear_polygon(Polygon polygon, double shear_x, double shear_y);
 
 #endif /* GRAPHICS_H */

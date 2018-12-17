@@ -13,9 +13,12 @@
 
 #define uchar unsigned char
 #define uint unsigned int
+#define ulong unsigned long
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define ROUND(x) (long)((x) + 0.5)
+#define UROUND(x) (ulong)((x) + 0.5)
 #define SIGN(x) ((x) > 0) - ((x) < 0)
 
 #define TRUE 1
