@@ -49,6 +49,25 @@ Polygon clone_polygon(Polygon polygon)
     return cloned_polygon;
 }
 
+Coordinates get_polygon_centroid(Polygon polygon)
+{
+    int v;
+    Coordinates centroid;
+
+    for (v = 0; v < polygon.vertices_length; v++)
+    {
+        centroid.x += polygon.vertices[v].x;
+        centroid.y += polygon.vertices[v].y;
+        centroid.z += polygon.vertices[v].z;
+    }
+
+    centroid.x /= polygon.vertices_length;
+    centroid.y /= polygon.vertices_length;
+    centroid.z /= polygon.vertices_length;
+
+    return centroid;
+}
+
 /* Transforms a given vertex based on an origin point and a transformation matrix. */
 Coordinates apply_transformation(Coordinates vertex, const Coordinates origin, const Matrix3x3 transformation)
 {
@@ -229,7 +248,7 @@ void draw_polygon(GraphicsContext *context, Polygon polygon)
 {
     Line line; /* holds parameters used to draw each line of the polygon */
     int v; /* index iterating over vertices */
-    Coordinates origin = polygon.vertices[0]; /* origin point used to apply transformations */
+    Coordinates origin = get_polygon_centroid(polygon); /* origin point used to apply transformations */
 
     if (polygon.vertices_length < 3)
     {

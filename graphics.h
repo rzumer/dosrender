@@ -70,6 +70,7 @@ typedef struct Polygon
 } Polygon;
 
 Polygon clone_polygon(Polygon polygon);
+Coordinates get_polygon_centroid(Polygon polygon);
 
 int init_context(GraphicsContext *context);
 void free_context(GraphicsContext *context);
